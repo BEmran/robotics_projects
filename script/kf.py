@@ -169,34 +169,38 @@ if __name__ == "__main__":
     for i in range(0, len(time)):
         if i > 100:
             u = 1
+        # run system for one step
         sys.step(u, dt=delta)
         real = sys.y[0][0]
         yr.append(real)
-
+        # add measurement noise
         measurment = real + np.random.normal(0, 0.1, 1)
         ym.append(measurment)
-
+        # apply kalman filter
         kf.step(u, dt=delta, measurment=measurment)
         ye.append(kf.x[0])
-
         K1.append(kf.K[0])
         K2.append(kf.K[1])
+        # calculate error
         e.append(real-ye[-1])
 
     print(f'rms = {np.linalg.norm(e)}')
 
     fig, axis = plot.subplots(3)
+    # plot output difference
     axis[0].plot(time, yr, marker='o', color='b', label='real')
     axis[0].plot(time, ym, color='r', label='noise')
     axis[0].plot(time, ye, color='g', label='filtred')
     axis[0].grid(True)
     axis[0].legend()
 
+    # plot kalman gains
     axis[1].plot(time, K1, color='r', label='kalman gain 1')
     axis[1].plot(time, K2, color='g', label='kalman gain 2')
     axis[1].grid(True)
     axis[1].legend()
 
+    # plot error
     axis[2].plot(time, e, color='k', label='error (real-filtered)')
     axis[2].grid(True)
     axis[2].legend()
