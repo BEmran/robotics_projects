@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/search_scan_matching/common.h
+math.h
+-
+iostream
+-
+string
+-
+
+../include/search_scan_matching/grid.h
+iostream
+-
+vector
+-
+search_scan_matching/common.h
+../include/search_scan_matching/search_scan_matching/common.h
+
+../include/search_scan_matching/range_finder.h
+search_scan_matching/common.h
+-
+search_scan_matching/grid.h
+-
+memory
+-
+
+/host_home/ws/git-ws/robotics_projects/search_scan_matching/app/agrid.cpp
+search_scan_matching/common.h
+-
+search_scan_matching/grid.h
+-
+search_scan_matching/range_finder.h
+-
+iostream
+-
+

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsearch_scan_matching.a  CMakeFiles/search_scan_matching.dir/src/common.cpp.o CMakeFiles/search_scan_matching.dir/src/grid.cpp.o CMakeFiles/search_scan_matching.dir/src/range_finder.cpp.o
+/usr/bin/ranlib libsearch_scan_matching.a
