@@ -81,6 +81,7 @@ add_library(${PROJECT_NAME}
   src/common.cpp
   src/grid.cpp
   src/range_finder.cpp
+  src/estimation.cpp
 )
 # # glob require CMake 3.12 or later:
 # file(GLOB HEDERS_LIST CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")

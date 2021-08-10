@@ -1,99 +1,70 @@
-#include <search_scan_matching/common.h>
-#include <search_scan_matching/grid.h>
-#include <search_scan_matching/range_finder.h>
-
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 
-int Score(std::vector<std::vector<uint8_t>> grid,
-          std::vector<std::vector<uint8_t>> laser) {
-  int score = 0;
-  for (int i = 0; i < grid.size(); ++i) {
-    for (int j = 0; j < grid.size(); ++j) {
-      if (grid[i][j] == laser[i][j]) score++;
-    }
-  }
-  return score;
-}
-
-struct Estimation {
-  utils::Pose2D pose;
-  int score;
-};
+#include "search_scan_matching/common.h"
+#include "search_scan_matching/estimation.h"
+#include "search_scan_matching/grid.h"
+#include "search_scan_matching/range_finder.h"
+;
 
 int main(int argc, char const* argv[]) {
   std::cout << "start ..." << std::endl;
 
-  auto g = std::make_shared<Grid2D>(20, 40);
+  // create a grid with specific hight and width
+  auto grid = std::make_shared<Grid2D>(20, 25);
 
-  utils::Pose2D laser(0.6, 0.7, 3.14);
+  // define exact sensor pose
+  utils::Pose2D exact_sensor_pose(0.6, 0.7, 3.14);
 
-  RangeFinder rf(1.2, 3.14 * 2, 0.1);
-  // rf.Print();
+  // create range finder
+  auto rf = std::make_shared<RangeFinder>(1.2, 3.14 * 2, 0.05);
 
-  // g->Display();
-  std::cout << "actual grid:" << std::endl;
+  // create obstacles
+  grid->CreatBox(utils::Pose2D(0.2, 1.0, 0), 0.70, 0.20);
+  grid->CreatBox(utils::Pose2D(0.1, 0.3, 0), 0.46, 0.46);
+  grid->CreatBox(utils::Pose2D(0.9, 0.0, 0), 0.10, 1.20);
+  grid->CreatBox(utils::Pose2D(0.0, 0.0, 0), 0.70, 0.05);
 
-  g->CreatBox(0.70, 0.20, utils::Pose2D(0.2, 1.0, 0));
-  g->CreatBox(0.46, 0.46, utils::Pose2D(0.1, 0.3, 0));
-  g->CreatBox(0.10, 1.20, utils::Pose2D(0.9, 0.0, 0));
-  g->CreatBox(0.7, 0.05, utils::Pose2D(0.0, 0.0, 0));
-  g->Display();
+  // display actual grid
+  std::cout << "Actual grid:" << std::endl;
+  utils::Display(grid->GetOccupancy());
 
-  rf.Execute(g, laser);
-  // rf.Print();
-  std::cout << "\n\n exact occupancy seen by laser" << std::endl;
-  auto l1 = rf.ToGrid(g, laser, true);
-  std::cout << "Perfect Score: " << Score(g->GetOccupancy(), l1) << " at "
-            << laser << std::endl;
+  // generate range finder data
+  rf->Execute(grid, exact_sensor_pose);
 
-  double linear_search_tolerance = 0.21;
-  double angular_search_tolerance = 0.3;
-  double linear_search_resolution = 0.01;
-  double angular_search_resolution = 0.02;
-  double linear_steps = linear_search_tolerance / linear_search_resolution + 1;
-  double angular_steps =
-      angular_search_tolerance / angular_search_resolution + 1;
-  double starting_x = laser.point.x - (linear_search_tolerance / 2);
-  double starting_y = laser.point.y - (linear_search_tolerance / 2);
-  double starting_angle = laser.theta - (angular_search_tolerance / 2);
-  std::vector<Estimation> est;
-  std::cout << "all possibale poses to check: " << std::endl;
-  for (int i = 0; i < angular_steps; ++i) {
-    double t = starting_angle + i * angular_search_resolution;
-    for (int j = 0; j < linear_steps; ++j) {
-      double x = starting_x + j * linear_search_resolution;
-      for (int k = 0; k < linear_steps; ++k) {
-        double y = starting_y + k * linear_search_resolution;
-        utils::Pose2D pose(x, y, t);
-        // std::cout << pose << std::endl;
-        auto l = rf.ToGrid(g, pose);
-        auto score = Score(g->GetOccupancy(), l);
-        // std::cout << "Score: " << score << ", at " << pose << std::endl;
+  // display exact occupancy grid seen by laser
+  std::cout << "\n\nExact occupancy seen by laser" << std::endl;
+  auto sensor_occupancy = rf->ToGrid(grid, exact_sensor_pose);
+  utils::Display(sensor_occupancy);
 
-        est.push_back(Estimation{pose : pose, score : score});
-      }
-    }
-  }
-  auto ptr = std::max_element(est.begin(), est.end(), [](auto& p1, auto& p2) {
-    return p1.score < p2.score;
-  });
-  std::cout << "maximum found: " << ptr->score << " at: " << ptr->pose
+  // calculate matching score of the exact pose
+  std::cout << "\n\nPerfect Score: "
+            << MatchingScore(grid->GetOccupancy(), sensor_occupancy) << " at "
+            << exact_sensor_pose << " at index of "
+            << grid->GetCell(exact_sensor_pose.point).cell << "\n\n"
             << std::endl;
-  // std::cout << std::endl;
-  // std::cout << "\n\n exact occupancy seen by laser" << std::endl;
-  // auto l1 = rf.ToGrid(g, laser);
-  // std::cout << "Score: " << Score(g->GetOccupancy(), l1) << std::endl;
 
-  // std::cout << "\n\n wrong occupancy seen by laser" << std::endl;
-  // auto l2 = rf.ToGrid(g, utils::Pose2D(0.3, 0.2, 1.57));
-  // std::cout << "Score: " << Score(g->GetOccupancy(), l2) << std::endl;
+  auto begin = std::chrono::steady_clock::now();
 
-  // std::cout << "\n\n wrong occupancy seen by laser" << std::endl;
-  // auto l3 = rf.ToGrid(g, utils::Pose2D(0.2, 0.1, 3.3));
-  // std::cout << "Score: " << Score(g->GetOccupancy(), l3) << std::endl;
+  // define search configuration
+  SearchConfig search_config(0.4, 0.6, 0.05, 0.05);
 
-  // std::cout << "is occupied: " << g->IsOccupied(utils::Point2D(0.1, 0.2))
-  //           << std::endl;
+  // create initial estimation pose
+  auto initial_estimate = exact_sensor_pose + utils::GenerateRandPose(0.1, 0.2);
+  std::cout << "Initial pose estimate: " << initial_estimate << " at index of "
+            << grid->GetCell(initial_estimate.point).cell << "\n\n"
+            << std::endl;
+
+  // run estimation algorithm
+  Estimation2D est(grid);
+  est.BruteSearch(initial_estimate, rf, search_config);
+
+  // calculate elapsed time
+  auto end = std::chrono::steady_clock::now();
+  auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
+                  .count();
+
+  std::cout << "Time elapsed = " << diff << " [ms]" << std::endl;
   return 0;
 }

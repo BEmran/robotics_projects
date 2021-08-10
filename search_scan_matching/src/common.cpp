@@ -1,58 +1,58 @@
+#include "search_scan_matching/common.h"
+
 #include <math.h>
-#include <search_scan_matching/common.h>
+
+#include <ctime>
+#include <random>
 
 namespace utils {
 
-// Point2D GridToWorld(const Pose2D& grid_coord, const Point2D& g_point) {
-//   double cos_theta = std::cos(grid_coord.theta);
-//   double sin_theta = std::sin(grid_coord.theta);
-//   double x = cos_theta * g_point.x - sin_theta * g_point.y +
-//   grid_coord.point.x; double y = sin_theta * g_point.x + cos_theta *
-//   g_point.y + grid_coord.point.y; return Point2D(x, y);
-// }
+double Norm(const Pose2D& p1, const Pose2D& p2) {
+  // find difference between tow poses
+  Pose2D diff = p1 - p2;
+  // find norm as sqrt(dx^2 + dy^2 + dtheta^2)
+  return std::sqrt(diff.point.x * diff.point.x +  // dx^2
+                   diff.point.y * diff.point.y +  // dy^2
+                   diff.theta * diff.theta);      // dtheta^2
+}
 
-// Point2D WorldToGrid(const Pose2D& world_coord, const Point2D& w_point) {
-//   double cos_theta = std::cos(world_coord.theta);
-//   double sin_theta = std::sin(world_coord.theta);
-//   double x_grid = cos_theta * (w_point.x - world_coord.point.x) +
-//                   sin_theta * (w_point.y - world_coord.point.y);
-//   double y_grid = -sin_theta * (w_point.x - world_coord.point.x) +
-//                   cos_theta * (w_point.y - world_coord.point.y);
-//   return Point2D(x_grid, y_grid);
-// }
+void Display(const std::vector<std::vector<uint8_t>>& occupancy) {
+  // loop through all rows
+  for (const auto& row : occupancy) {
+    // loop through all columns in a single row
+    for (const auto& cell : row) {
+      if (cell == FREE)
+        std::cout << "|-";
+      else if (cell == OCCUPIED)
+        std::cout << "|x";
+      else if (cell == SENSOR)
+        std::cout << "|o";
+      else
+        std::cerr << "undefined cell value of: " << cell << std::endl;
+    }
+    std::cout << "|" << std::endl;
+  }
+}
 
-// Pose2D GridToWorld(const Pose2D& grid_coord, const Pose2D& g_pose) {
-//   Point2D w_point = GridToWorld(grid_coord, g_pose.point);
-//   double theta = g_pose.theta + grid_coord.theta;
-//   return Pose2D(w_point, theta);
-// }
+std::vector<std::vector<uint8_t>> Creat2DArray(int h, int w,
+                                               const uint8_t val) {
+  // create a single row of size width and initialize it by val
+  std::vector<uint8_t> row(w, val);
+  // create a a 2nd dimintion of size height and initialize it be vector row
+  std::vector<std::vector<uint8_t>> arr(h, row);
+  return arr;
+}
 
-// Pose2D WorldToGrid(const Pose2D& world_coord, const Pose2D& w_pose) {
-//   Point2D g_point = WorldToGrid(world_coord, w_pose.point);
-//   double theta = w_pose.theta - world_coord.theta;
-//   return Pose2D(g_point, theta);
-// }
-
-// Point2D AToFrameB(const Pose2D& a_wrt_b, const Point2D& point_a) {
-//   double cos_theta = std::cos(a_wrt_b.theta);
-//   double sin_theta = std::sin(a_wrt_b.theta);
-//   double x = cos_theta * point_a.x - sin_theta * point_a.y + a_wrt_b.point.x;
-//   double y = sin_theta * point_a.x + cos_theta * point_a.y + a_wrt_b.point.y;
-//   return Point2D(x, y);
-// }
-
-// Pose2D AToFrameB(const Pose2D& a_wrt_b, const Pose2D& point_a) {
-//   Point2D point_b = GridToWorld(a_wrt_b, point_a.point);
-//   double theta = point_a.theta + a_wrt_b.theta;
-//   return Pose2D(point_b, theta);
-// }
-
-// Pose2D InvFrame(const Pose2D& coord) {
-//   double cos_theta = std::cos(coord.theta);
-//   double sin_theta = std::sin(coord.theta);
-//   double x_grid = -cos_theta * coord.point.x - sin_theta * coord.point.y;
-//   double y_grid = +sin_theta * coord.point.x - cos_theta * coord.point.y;
-//   double theta = -coord.theta;
-//   return Pose2D(x_grid, y_grid, theta);
-// }
+Pose2D GenerateRandPose(const double linear_stddev,
+                        const double angular_stddev) {
+  // Generate a normal distribution around that mean
+  std::mt19937 mt(time(nullptr));
+  std::normal_distribution<> linear_normal_dist(0, linear_stddev);
+  std::normal_distribution<> angular_normal_dist(0, angular_stddev);
+  // generate a random position
+  double x = linear_normal_dist(mt);
+  double y = linear_normal_dist(mt);
+  double t = angular_normal_dist(mt);
+  return utils::Pose2D(x, y, t);
+}
 }  // namespace utils

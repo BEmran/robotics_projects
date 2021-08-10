@@ -11,8 +11,7 @@ class RangeFinder {
   std::vector<double> Execute(const std::shared_ptr<Grid2D> grid,
                               const utils::Pose2D pose);
   std::vector<std::vector<uint8_t>> ToGrid(const std::shared_ptr<Grid2D> grid,
-                                           const utils::Pose2D pose,
-                                           const bool display = false);
+                                           const utils::Pose2D pose);
   std::vector<double> GetData();
   void Print();
 

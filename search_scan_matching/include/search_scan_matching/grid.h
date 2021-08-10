@@ -5,8 +5,6 @@
 
 #include "search_scan_matching/common.h"
 
-std::vector<std::vector<uint8_t>> Creat2DArray(int h, int w, const uint8_t val);
-
 class Grid2D {
  public:
   Grid2D(const int h, const int w);
@@ -14,15 +12,14 @@ class Grid2D {
          const double resolution);
   Grid2D(const utils::Frame2D f, const int h, const int w,
          const double resolution, const std::vector<std::vector<uint8_t>>& occ);
-  void Display();
   void AddObstacle(const std::vector<std::vector<uint8_t>>& object,
                    const utils::Pose2D origin);
 
-  void CreatBox(const double h, const double w, const utils::Pose2D origin);
+  void CreatBox(const utils::Pose2D origin, const double h, const double w);
   bool IsOccupied(utils::Point2D point);
-  double Resolution() const;
-  std::pair<int, int> GetCell(utils::Point2D point) const;
+  utils::CellInfo GetCell(utils::Point2D point) const;
   std::pair<int, int> GetSize() const;
+  double GetResolution() const;
   std::vector<std::vector<uint8_t>> GetOccupancy() const;
 
  private:
@@ -32,5 +29,3 @@ class Grid2D {
   utils::Frame2D frame_;
   std::vector<std::vector<uint8_t>> occupancy_;
 };
-
-void dis();
