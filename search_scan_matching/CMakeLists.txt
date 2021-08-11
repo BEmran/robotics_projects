@@ -78,7 +78,7 @@ include_directories(
 
 # Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/common.cpp
+  src/utils.cpp
   src/grid.cpp
   src/range_finder.cpp
   src/estimation.cpp

@@ -1,11 +1,13 @@
 #include <math.h>
 #include <search_scan_matching/common.h>
+#include <search_scan_matching/utils.h>
 
 #include <array>
 
 #include "gtest/gtest.h"
 
 using namespace utils;
+using namespace comm;
 
 const double EPS = 0.000001;
 
@@ -62,7 +64,7 @@ void EXPECT_POSE2D(const Pose2D& p1, const Pose2D& p2) {
 }
 void EXPECT_FRAME2D(const Frame2D& f1, const Frame2D& f2) {
   EXPECT_POSE2D(f1.origin, f2.origin);
-  EXPECT_EQ(f1.id, f2.id);
+  EXPECT_EQ(f1.name, f2.name);
 }
 /****************************************************************************/
 TEST(Point2D, Definition) {

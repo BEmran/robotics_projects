@@ -3,6 +3,8 @@
 #include <algorithm>  // max, min
 #include <iomanip>    // std::setprecision
 
+#include "search_scan_matching/utils.h"
+
 int MatchingScore(std::vector<std::vector<uint8_t>> grid,
                   std::vector<std::vector<uint8_t>> sensor) {
   int score = 0;
@@ -16,9 +18,9 @@ int MatchingScore(std::vector<std::vector<uint8_t>> grid,
 
 Estimation2D::Estimation2D(const std::shared_ptr<Grid2D> grid) : grid_(grid) {}
 
-EstimationInfo Estimation2D::BruteSearch(const utils::Pose2D& init_pose,
-                                         const std::shared_ptr<RangeFinder> rf,
-                                         const SearchConfig& config) {
+est::EstimationInfo Estimation2D::BruteSearch(
+    const comm::Pose2D& init_pose, const std::shared_ptr<RangeFinder> rf,
+    const est::SearchConfig& config) {
   // store initial pose
   init_pose_ = init_pose;
   // clear data
@@ -29,11 +31,11 @@ EstimationInfo Estimation2D::BruteSearch(const utils::Pose2D& init_pose,
   int linear_steps = config.linear_tolerance / config.linear_resolution + 1;
   int angular_steps = config.angular_tolerance / config.angular_resolution + 1;
   // calculate starting pose
-  utils::Pose2D start(init_pose);
+  comm::Pose2D start(init_pose);
   start.point.x -= config.linear_tolerance / 2;
   start.point.y -= config.linear_tolerance / 2;
   start.theta -= config.angular_tolerance / 2;
-  utils::Pose2D end(init_pose);
+  comm::Pose2D end(init_pose);
   end.point.x += config.linear_tolerance / 2;
   end.point.y += config.linear_tolerance / 2;
   end.theta += config.angular_tolerance / 2;
@@ -58,13 +60,13 @@ EstimationInfo Estimation2D::BruteSearch(const utils::Pose2D& init_pose,
       for (int k = 0; k < linear_steps; ++k) {
         // update y position
         double y = start.point.y + k * config.linear_resolution;
-        utils::Pose2D estimate(x, y, t);
+        comm::Pose2D estimate(x, y, t);
         // calculate range_finder occupancy
         auto rf_occupancy = rf->ToGrid(grid_, estimate);
         // calculate score
         auto score = MatchingScore(grid_->GetOccupancy(), rf_occupancy);
         // record estimation score
-        est_info_vec_.push_back(EstimationInfo(score, estimate));
+        est_info_vec_.push_back(est::EstimationInfo(score, estimate));
       }
     }
   }
@@ -83,7 +85,7 @@ int Estimation2D::MaximumScore() {
   return max_;
 }
 
-std::vector<EstimationInfo> Estimation2D::MaximumEstimates() {
+std::vector<est::EstimationInfo> Estimation2D::MaximumEstimates() {
   // calculate maximum score if not calculated
   if (max_ == -1) {
     MaximumScore();
@@ -101,7 +103,7 @@ std::vector<EstimationInfo> Estimation2D::MaximumEstimates() {
   return max_est_info_vec_;
 }
 
-EstimationInfo Estimation2D::ClosestEstimate() {
+est::EstimationInfo Estimation2D::ClosestEstimate() {
   // extract maximum estimation vector if not calculated
   if (max_est_info_vec_.empty()) {
     MaximumEstimates();
@@ -109,7 +111,7 @@ EstimationInfo Estimation2D::ClosestEstimate() {
 
   // find norm between initial pose and estimation poses of maximum score
   for (auto& est : max_est_info_vec_) {
-    double norm = utils::Norm(init_pose_, est.pose);
+    double norm = utils::L2Norm(init_pose_, est.pose);
     est.closeness = norm;
   }
 

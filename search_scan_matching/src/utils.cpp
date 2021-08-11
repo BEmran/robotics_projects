@@ -1,16 +1,25 @@
-#include "search_scan_matching/common.h"
+/**
+ * @file utils.cpp
+ * @author Bara Emran (bara.erman@gmail.com)
+ * @brief implementation of utility functions
+ * @version 0.1
+ * @date 2021-08-11
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
 
-#include <math.h>
+#include "search_scan_matching/utils.h"
 
-#include <ctime>
-#include <random>
+#include <ctime>   // time
+#include <random>  // mt19937, normal_distribution
 
 namespace utils {
 
-double Norm(const Pose2D& p1, const Pose2D& p2) {
+double L2Norm(const comm::Pose2D& p1, const comm::Pose2D& p2) {
   // find difference between tow poses
-  Pose2D diff = p1 - p2;
-  // find norm as sqrt(dx^2 + dy^2 + dtheta^2)
+  comm::Pose2D diff = p1 - p2;
+  // find L2Norm as sqrt(dx^2 + dy^2 + dtheta^2)
   return std::sqrt(diff.point.x * diff.point.x +  // dx^2
                    diff.point.y * diff.point.y +  // dy^2
                    diff.theta * diff.theta);      // dtheta^2
@@ -21,11 +30,11 @@ void Display(const std::vector<std::vector<uint8_t>>& occupancy) {
   for (const auto& row : occupancy) {
     // loop through all columns in a single row
     for (const auto& cell : row) {
-      if (cell == FREE)
+      if (cell == comm::FREE)
         std::cout << "|-";
-      else if (cell == OCCUPIED)
+      else if (cell == comm::OCCUPIED)
         std::cout << "|x";
-      else if (cell == SENSOR)
+      else if (cell == comm::SENSOR)
         std::cout << "|o";
       else
         std::cerr << "undefined cell value of: " << cell << std::endl;
@@ -43,8 +52,8 @@ std::vector<std::vector<uint8_t>> Creat2DArray(int h, int w,
   return arr;
 }
 
-Pose2D GenerateRandPose(const double linear_stddev,
-                        const double angular_stddev) {
+comm::Pose2D GenerateRandPose(const double linear_stddev,
+                              const double angular_stddev) {
   // Generate a normal distribution around that mean
   std::mt19937 mt(time(nullptr));
   std::normal_distribution<> linear_normal_dist(0, linear_stddev);
@@ -53,6 +62,18 @@ Pose2D GenerateRandPose(const double linear_stddev,
   double x = linear_normal_dist(mt);
   double y = linear_normal_dist(mt);
   double t = angular_normal_dist(mt);
-  return utils::Pose2D(x, y, t);
+  return comm::Pose2D(x, y, t);
+}
+
+void Print(std::vector<double> vec) {
+  std::cout << "Data: [";
+  // loop through data
+  for (size_t i = 0; i < vec.size(); ++i) {
+    std::cout << vec[i];
+    if (i < vec.size() - 1) {
+      std::cout << ", ";
+    }
+  }
+  std::cout << std::endl;
 }
 }  // namespace utils
