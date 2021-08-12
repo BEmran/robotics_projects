@@ -14,12 +14,13 @@
 
 #include <iostream>  // ostream
 #include <string>    // string
+#include <vector>    // vector
 
 namespace comm {
 
 // define cell value
-const uint8_t FREE = 0;        // free cell
-const uint8_t SENSOR = 1;      // occupied by a sensor
+const uint8_t FREE = 0;    // free cell
+const uint8_t SENSOR = 1;  // sensor cell for debug purposes, treat as free cell
 const uint8_t OCCUPIED = 255;  // occupied by an obstacle
 
 /**
@@ -318,6 +319,78 @@ struct Frame2D {
    */
   friend std::ostream& operator<<(std::ostream& os, const Frame2D& f) {
     return os << "Frame: " << f.name << " Origin: [" << f.origin << "]";
+  }
+};
+
+/**
+ * @brief represents a single data measured by a range finder sensor
+ *
+ */
+struct RangeFinderData {
+  double angle = 0;  // ray angle in rad
+  double range = 0;  // ray range in m
+
+  /**
+   * @brief default constructor a new RangeFinderData object
+   *
+   */
+  RangeFinderData(){};
+
+  /**
+   * @brief Construct a new RangeFinderData object
+   *
+   * @param ang ray angle in rad
+   * @param r ray range in m
+   */
+  RangeFinderData(const double ang, const double r) : angle(ang), range(r) {}
+
+  /**
+   * @brief a pretty way to printout RangeFinderData values
+   *
+   * @param os output stream
+   * @param data RangeFinderData object to be printed
+   * @return std::ostream& output stream with RangeFinderData information pass
+   * to it
+   */
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const RangeFinderData& data) {
+    return os << "[ang: " << data.angle << ", r: " << data.range << "]";
+  }
+};
+
+typedef std::vector<RangeFinderData> RangeData;
+
+/**
+ * @brief holds a grid size in height x width
+ *
+ */
+struct Size {
+  size_t height = 0;
+  size_t width = 0;
+  /**
+   * @brief default constructor a new Size object
+   *
+   */
+  Size(){};
+
+  /**
+   * @brief Construct a new Size object
+   *
+   * @param h grid height
+   * @param w grid width
+   */
+  Size(const double h, const double w) : height(h), width(w) {}
+
+  /**
+   * @brief a pretty way to printout Size values
+   *
+   * @param os output stream
+   * @param data Size object to be printed
+   * @return std::ostream& output stream with Size information pass
+   * to it
+   */
+  friend std::ostream& operator<<(std::ostream& os, const Size& s) {
+    return os << "[h: " << s.height << ", w: " << s.width << "]";
   }
 };
 

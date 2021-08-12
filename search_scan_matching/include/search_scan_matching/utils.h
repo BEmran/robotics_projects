@@ -35,12 +35,12 @@ void Display(const std::vector<std::vector<uint8_t>>& occupancy);
 /**
  * @brief creates a 2d Array of hegitXwidth size with an initial value
  *
- * @param h array height, number of rows
- * @param w array width, number of columns
+ * @param size grid size height x width
  * @param val initialized value value
  * @return std::vector<std::vector<uint8_t>> an initialized 2d array
  */
-std::vector<std::vector<uint8_t>> Creat2DArray(int h, int w, const uint8_t val);
+std::vector<std::vector<uint8_t>> Creat2DArray(const comm::Size& size,
+                                               const uint8_t val);
 
 /**
  * @brief generate a random pose with mean 0 and passed variance used to
@@ -57,5 +57,43 @@ comm::Pose2D GenerateRandPose(const double linear_stddev = 0.01,
  * @brief printout vector data for debugging purposes
  *
  */
-void Print(std::vector<double> vec);
+void PrintVec(std::vector<double> vec);
+
+/**
+ * @brief convert point information from Polar system to cartesian
+ *
+ * @param angle angle from x-axis counterclocwise
+ * @param radius distance from origin to the point
+ * @return comm::Point2D cartesian point in x-axis and y-axs
+ */
+comm::Point2D PolarToCaretssian(const double angle, const double radius);
+
+/**
+ * @brief Get cell indices defined by projection of the passed point on a
+ * 2d array size
+ *
+ * @param point a grid size height x width
+ * @param size point to the desired cell
+ * @param resolution grid resolution
+ * @return comm::CellInfo contines the cell indices and if the projected cell
+ * is within the grid boundaries
+ */
+comm::CellInfo PointToCell(const comm::Point2D& point, const comm::Size& size,
+                           const double resolution);
+
+/**
+ * @brief convert range finder data to occupancy grid
+ *
+ * @param range_finder range finder pose
+ * @param range_finder_data range finder data
+ * @param range_max_range range finder maximum range
+ * @param size a 2D Grid size
+ * @param resolution a 2D Grid resolution
+ * @return std::vector<std::vector<uint8_t>> occupancy grid
+ */
+std::vector<std::vector<uint8_t>> RangeDataToOccupancyGrid(
+    const comm::Pose2D& range_finder_pose,
+    const comm::RangeData& range_finder_data, const double range_max_range,
+    const comm::Size& size, const double resolution);
+
 }  // namespace utils

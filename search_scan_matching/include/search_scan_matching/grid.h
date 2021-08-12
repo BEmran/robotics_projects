@@ -23,7 +23,7 @@
 class Grid2D {
  public:
   /**
-   * @brief Construct a new Grid 2D object using its height and width
+   * @brief Construct a new Grid 2D object using its length and width in meter
    *
    * @param length length of the grid in meter
    * @param width width of the grid in meter
@@ -61,24 +61,14 @@ class Grid2D {
    * @return true Occupied, if cell value == comm::OCCUPIED
    * @return false otherwise
    */
-  bool IsOccupied(comm::Point2D point);
-
-  /**
-   * @brief Get the information of a cell defined by projection of the
-   * passed point on the grid
-   *
-   * @param point point to the desired cell
-   * @return comm::CellInfo contines the cell indices and if the projected cell
-   * is within the grid boundaries
-   */
-  comm::CellInfo GetCell(comm::Point2D point) const;
+  bool IsOccupied(comm::Point2D point) const;
 
   /**
    * @brief Gets the Grid size
    *
-   * @return std::pair<int, int> size as pair <height, width>
+   * @return Size grid size height x width
    */
-  std::pair<int, int> GetSize() const;
+  comm::Size GetSize() const;
 
   /**
    * @brief Gets the Grid resolution
@@ -103,9 +93,8 @@ class Grid2D {
 
  private:
   comm::Frame2D
-      frame_;   // grid pose with respect to reference frame, i.e. World
-  double res_;  // grid resolution m/cell
-  int height_;  // grid height
-  int width_;   // grid width
+      frame_;        // grid pose with respect to reference frame, i.e. World
+  double res_;       // grid resolution m/cell
+  comm::Size size_;  // grid size
   std::vector<std::vector<uint8_t>> occupancy_;  // occupancy grid
 };

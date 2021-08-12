@@ -82,22 +82,25 @@ class Estimation2D {
   /**
    * @brief Construct a new Estimation 2 D object
    *
-   * @param grid shared_ptr to the 2D grid
    */
-  Estimation2D(const std::shared_ptr<Grid2D> grid);
+  Estimation2D();
 
   /**
    * @brief Check all possible poses defined by the search caretria around the
    * initial pose and calculates their estimation matching score
    *
+   * @param grid 2D grid
    * @param init_pose initali estimation pose
-   * @param rf shared_ptr to the range finder sensor
+   * @param range_data range finder data
+   * @param range_max_range range finder maximum range
    * @param config searching configuration
    * @return est::EstimationInfo closes estimated pose with maximum matching
    * score
    */
-  est::EstimationInfo BruteSearch(const comm::Pose2D& init_pose,
-                                  const std::shared_ptr<RangeFinder> rf,
+  est::EstimationInfo BruteSearch(const Grid2D& grid,
+                                  const comm::Pose2D& init_pose,
+                                  const comm::RangeData& range_data,
+                                  const double range_max_range,
                                   const est::SearchConfig& config);
 
  private:
@@ -123,9 +126,8 @@ class Estimation2D {
    */
   est::EstimationInfo ClosestEstimate();
 
-  std::shared_ptr<Grid2D> grid_;  // 2d gris olds occupancy array
-  comm::Pose2D init_pose_;        // initial pose estimation
-  int max_;                       // maximum score
+  comm::Pose2D init_pose_;  // initial pose estimation
+  int max_;                 // maximum score
   std::vector<est::EstimationInfo>
       est_info_vec_;  // holds estimation information of all checked poses
   std::vector<est::EstimationInfo>

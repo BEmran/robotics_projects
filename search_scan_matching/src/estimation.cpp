@@ -16,11 +16,13 @@ int MatchingScore(std::vector<std::vector<uint8_t>> grid,
   return score;
 }
 
-Estimation2D::Estimation2D(const std::shared_ptr<Grid2D> grid) : grid_(grid) {}
+Estimation2D::Estimation2D() {}
 
-est::EstimationInfo Estimation2D::BruteSearch(
-    const comm::Pose2D& init_pose, const std::shared_ptr<RangeFinder> rf,
-    const est::SearchConfig& config) {
+est::EstimationInfo Estimation2D::BruteSearch(const Grid2D& grid,
+                                              const comm::Pose2D& init_pose,
+                                              const comm::RangeData& range_data,
+                                              const double range_max_range,
+                                              const est::SearchConfig& config) {
   // store initial pose
   init_pose_ = init_pose;
   // clear data
@@ -62,9 +64,11 @@ est::EstimationInfo Estimation2D::BruteSearch(
         double y = start.point.y + k * config.linear_resolution;
         comm::Pose2D estimate(x, y, t);
         // calculate range_finder occupancy
-        auto rf_occupancy = rf->ToGrid(grid_, estimate);
+        auto rf_occupancy = utils::RangeDataToOccupancyGrid(
+            estimate, range_data, range_max_range, grid.GetSize(),
+            grid.GetResolution());
         // calculate score
-        auto score = MatchingScore(grid_->GetOccupancy(), rf_occupancy);
+        auto score = MatchingScore(grid.GetOccupancy(), rf_occupancy);
         // record estimation score
         est_info_vec_.push_back(est::EstimationInfo(score, estimate));
       }
@@ -119,11 +123,5 @@ est::EstimationInfo Estimation2D::ClosestEstimate() {
   auto min_ptr = std::min_element(
       max_est_info_vec_.begin(), max_est_info_vec_.end(),
       [](auto& p1, auto& p2) { return p1.closeness < p2.closeness; });
-
-  // printout result
-  std::cout << "Closest estimate has norm of [" << min_ptr->closeness
-            << "] found at: " << min_ptr->pose << " and index of "
-            << grid_->GetCell(min_ptr->pose.point).cell << "\n\n"
-            << std::endl;
   return *min_ptr;
 }
