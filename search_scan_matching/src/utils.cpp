@@ -99,43 +99,4 @@ comm::CellInfo PointToCell(const comm::Point2D& point, const comm::Size& size,
   // return result
   return comm::CellInfo(valid, cell);
 }
-
-std::vector<std::vector<uint8_t>> RangeDataToOccupancyGrid(
-    const comm::Pose2D& range_finder_pose,
-    const comm::RangeData& range_finder_data, const double range_max_range,
-    const comm::Size& size, const double resolution) {
-  // create sensor frame to map all points from sensor frame to grid frame
-  comm::Frame2D sensor_frame(range_finder_pose, "sensor");
-  // create empty grid to fill it with lasser finding
-  auto sensor_occupancy = utils::Creat2DArray(size, comm::FREE);
-  // place sensor pose on grid
-  const auto sensor_pose_cell =
-      PointToCell(range_finder_pose.point, size, resolution);
-  // mark sensor pose, make sure the cell index are within the grid
-  if (sensor_pose_cell.valid) {
-    sensor_occupancy[sensor_pose_cell.cell.row][sensor_pose_cell.cell.col] =
-        comm::SENSOR;
-  }
-  // loop through all sensor rays
-  for (const auto& d : range_finder_data) {
-    // skip ray if range is bigger than sensor mas range
-    if (d.range > range_max_range) continue;
-    // transform the measured data into a cartesian point
-    const auto range_point = utils::PolarToCaretssian(d.angle, d.range);
-    // transform calculated point from sensor frame to grid frame
-    const auto transfeared_point = sensor_frame.TransformBack(range_point);
-    // transfer calculated point to grid cell coordination
-    const auto transfeared_cell_info =
-        PointToCell(transfeared_point, size, resolution);
-    // make sure the cell index are within the grid
-    if (transfeared_cell_info.valid) {
-      // register the cell as occupied
-      sensor_occupancy[transfeared_cell_info.cell.row]
-                      [transfeared_cell_info.cell.col] = comm::OCCUPIED;
-    }
-  }
-  // return sensor occupancy
-  return sensor_occupancy;
-}
-
 }  // namespace utils

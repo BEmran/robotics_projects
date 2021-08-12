@@ -1,3 +1,13 @@
+/**
+ * @file estimation.h
+ * @author Bara Emran (bara.erman@gmail.com)
+ * @brief defines estimation algorithm class
+ * @version 0.1
+ * @date 2021-08-11
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
 
 #pragma once
 
@@ -131,6 +141,6 @@ class Estimation2D {
   std::vector<est::EstimationInfo>
       est_info_vec_;  // holds estimation information of all checked poses
   std::vector<est::EstimationInfo>
-      max_est_info_vec_;  // holds estiamtion information of poses with he
+      max_est_info_vec_;  // holds estimation information of poses with he
                           // maximum score
 };

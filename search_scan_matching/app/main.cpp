@@ -13,10 +13,8 @@ int main(int argc, char const* argv[]) {
 
   // Create grid and fill with obstacles ------------------------------------//
   // create a grid with specific dimintion in meter
-  Grid2D grid(1, 1.25);
-
-  // define exact sensor pose
-  comm::Pose2D exact_sensor_pose(0.8, 0.7, 3.14);
+  comm::Pose2D grid_pose(0, -0.5, 0);
+  Grid2D grid(grid_pose, 0.05, 1, 1.25);
 
   // create obstacles
   grid.CreateObstacle(comm::Pose2D(0.2, 1.0, 0.2), 0.50, 0.20);
@@ -34,15 +32,16 @@ int main(int argc, char const* argv[]) {
   const double sensor_fov = 3.14 * 2;
   const double sensor_res = 0.05;
   RangeFinder rf(sensor_max_range, sensor_fov, sensor_res);
+  // define exact sensor pose
+  comm::Pose2D exact_sensor_pose(0.8, 0.7, 3.14);
   // generate range finder data
   auto range_data = rf.Execute(grid, exact_sensor_pose);
 
   // Printout ground truth information --------------------------------------//
   // display exact occupancy grid seen by laser
   std::cout << "\n\nExact occupancy seen by laser" << std::endl;
-  auto sensor_occupancy = utils::RangeDataToOccupancyGrid(
-      exact_sensor_pose, range_data, sensor_max_range, grid.GetSize(),
-      grid.GetResolution());
+  auto sensor_occupancy = RangeDataToOccupancyGrid(
+      grid, exact_sensor_pose, range_data, sensor_max_range);
   utils::Display(sensor_occupancy);
 
   // calculate matching score of the exact pose

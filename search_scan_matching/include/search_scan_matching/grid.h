@@ -34,13 +34,13 @@ class Grid2D {
    * @brief Construct a new Grid 2D object using its height and width at
    * specific pose
    *
-   * @param frame grid pose with respect to World
+   * @param pose grid pose with respect to World
    * @param resolution grid resolution
    * @param length length of the grid in meter
    * @param width width of the grid in meter
    */
-  Grid2D(const comm::Frame2D frame, const double resolution,
-         const double length, const double width);
+  Grid2D(const comm::Pose2D pose, const double resolution, const double length,
+         const double width);
 
   /**
    * @brief Create a rectangle obstacle on the grid defined by its length and
@@ -90,6 +90,13 @@ class Grid2D {
    * @return std::vector<std::vector<uint8_t>> 2D array occupancy
    */
   void SetOccupancy(const std::vector<std::vector<uint8_t>>& occ);
+
+  /**
+   * @brief Gets the Grid frame
+   *
+   * @return commFrame2D grid frame
+   */
+  comm::Frame2D GetFrame() const;
 
  private:
   comm::Frame2D

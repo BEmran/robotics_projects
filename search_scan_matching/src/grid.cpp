@@ -1,3 +1,14 @@
+/**
+ * @file grid.h
+ * @author Bara Emran (bara.erman@gmail.com)
+ * @brief Implementation of Grid class
+ * @version 0.1
+ * @date 2021-08-11
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
+
 #include "search_scan_matching/grid.h"
 
 #include "search_scan_matching/utils.h"
@@ -13,9 +24,9 @@ Grid2D::Grid2D(const double length, const double width)
   occupancy_ = utils::Creat2DArray(size_, comm::FREE);
 }
 
-Grid2D::Grid2D(const comm::Frame2D frame, const double resolution,
+Grid2D::Grid2D(const comm::Pose2D pose, const double resolution,
                const double length, const double width)
-    : frame_(frame),
+    : frame_(comm::Frame2D(pose, "grid")),
       res_(resolution),
       size_(comm::Size(length / resolution, width / resolution)) {
   // initialize FREE occupancy
@@ -59,14 +70,15 @@ bool Grid2D::IsOccupied(comm::Point2D point) const {
   // return occupied if cell has value of 255
   if (cell_value == comm::OCCUPIED) {
     return true;
-  }  // if value is not defined
-  else if (cell_value != comm::FREE) {
+  } else if (cell_value != comm::FREE) {  // if value is not defined
     std::cerr << "undefined cell value of: " << cell_value << std::endl;
   }
   return false;
 }
 
 comm::Size Grid2D::GetSize() const { return size_; }
+
+comm::Frame2D Grid2D::GetFrame() const { return frame_; }
 
 double Grid2D::GetResolution() const { return res_; }
 

@@ -14,6 +14,8 @@
 #include <search_scan_matching/common.h>  // Pose2D
 #include <search_scan_matching/grid.h>    // Grid2D
 
+#include <vector>  // vector
+
 /**
  * @brief Simulate Range Finder sensor by generating its
  * measured data with respect to a grid and its pose wrt to the grid
@@ -55,3 +57,17 @@ class RangeFinder {
   double res_;  // range finder angle resolution
   comm::RangeData data_;  // a vector contains range finder data
 };
+
+/**
+ * @brief convert range finder data to occupancy grid
+ *
+ * @param grid grid with actual obstacles are placed
+ * @param range_finder_pose range finder pose
+ * @param range_finder_data range finder data
+ * @param range_finder_max_range range finder maximum range
+ * @return std::vector<std::vector<uint8_t>> occupancy grid
+ */
+std::vector<std::vector<uint8_t>> RangeDataToOccupancyGrid(
+    const Grid2D& grid, const comm::Pose2D& range_finder_pose,
+    const comm::RangeData& range_finder_data,
+    const double range_finder_max_range);

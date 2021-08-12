@@ -1,3 +1,14 @@
+/**
+ * @file estimation.cpp
+ * @author Bara Emran (bara.erman@gmail.com)
+ * @brief Implementation of estimation algorithm class
+ * @version 0.1
+ * @date 2021-08-11
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
+
 #include "search_scan_matching/estimation.h"
 
 #include <algorithm>  // max, min
@@ -64,9 +75,8 @@ est::EstimationInfo Estimation2D::BruteSearch(const Grid2D& grid,
         double y = start.point.y + k * config.linear_resolution;
         comm::Pose2D estimate(x, y, t);
         // calculate range_finder occupancy
-        auto rf_occupancy = utils::RangeDataToOccupancyGrid(
-            estimate, range_data, range_max_range, grid.GetSize(),
-            grid.GetResolution());
+        auto rf_occupancy = RangeDataToOccupancyGrid(grid, estimate, range_data,
+                                                     range_max_range);
         // calculate score
         auto score = MatchingScore(grid.GetOccupancy(), rf_occupancy);
         // record estimation score

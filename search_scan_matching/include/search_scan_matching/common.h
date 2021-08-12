@@ -36,7 +36,7 @@ struct Cell {
    * @brief Default Constructor for Cell object
    *
    */
-  Cell();
+  Cell() {}
 
   /**
    * @brief Construct a new Cell object
@@ -67,6 +67,12 @@ struct CellInfo {
   bool valid = false;  // indicate if cell indices are valied
   Cell cell;           // cell object contains cell indices
   /**
+   * @brief Default Constructor for CellInfo object
+   *
+   */
+  CellInfo() {}
+
+  /**
    * @brief Construct a new CellInfo object
    *
    * @param v validation of cell indices
@@ -87,7 +93,7 @@ struct Point2D {
    * @brief default constructor of Point2D object
    *
    */
-  Point2D(){};
+  Point2D() {}
 
   /**
    * @brief Construct a new Point2D object
@@ -147,7 +153,7 @@ struct Pose2D {
    * @brief default constructor a new Pose2D object
    *
    */
-  Pose2D(){};
+  Pose2D() {}
 
   /**
    * @brief Construct a new Pose2D object
@@ -217,7 +223,7 @@ struct Frame2D {
    * @brief default constructor a new Frame2D object
    *
    */
-  Frame2D(){};
+  Frame2D() {}
 
   /**
    * @brief Construct a new Frame2D object using pose information
@@ -225,23 +231,23 @@ struct Frame2D {
    * @param pose frame origin pose
    * @param name name of the frame
    */
-  Frame2D(Pose2D pose, std::string str) : origin(pose), name(str){};
+  Frame2D(Pose2D pose, std::string str) : origin(pose), name(str) {}
 
   /**
    * @brief inverse frame pose (origin)
    *
    * @return Frame2D inverted frame
    */
-  Frame2D Inverse() {
+  Frame2D Inverse() const {
     // calculate cosine and sine
-    double cos_theta = std::cos(origin.theta);
-    double sin_theta = std::sin(origin.theta);
+    const double cos_theta = std::cos(origin.theta);
+    const double sin_theta = std::sin(origin.theta);
     // invert rotation matrix and multiply by the negative of translation
     // t21 = -R12^T * t12
-    double x = -cos_theta * origin.point.x - sin_theta * origin.point.y;
-    double y = +sin_theta * origin.point.x - cos_theta * origin.point.y;
+    const double x = -cos_theta * origin.point.x - sin_theta * origin.point.y;
+    const double y = +sin_theta * origin.point.x - cos_theta * origin.point.y;
     // invert the rotation angle
-    double theta = -origin.theta;
+    const double theta = -origin.theta;
     // return inverted frame
     return Frame2D(Pose2D(x, y, theta), "Inverse " + name);
   }
@@ -252,14 +258,14 @@ struct Frame2D {
    * @param point point defined in this frame
    * @return Point2D transferred point to the reference frame
    */
-  Point2D TransformBack(Point2D point) {
+  Point2D TransformBack(Point2D point) const {
     // calculate cosine and sine
-    double cos_theta = std::cos(origin.theta);
-    double sin_theta = std::sin(origin.theta);
+    const double cos_theta = std::cos(origin.theta);
+    const double sin_theta = std::sin(origin.theta);
     // multiply point of intrest by frame rotation and add frame translation
     // P1 = R12 * P2 + t12
-    double x = cos_theta * point.x - sin_theta * point.y + origin.point.x;
-    double y = sin_theta * point.x + cos_theta * point.y + origin.point.y;
+    const double x = cos_theta * point.x - sin_theta * point.y + origin.point.x;
+    const double y = sin_theta * point.x + cos_theta * point.y + origin.point.y;
     return Point2D(x, y);
   }
 
@@ -269,16 +275,16 @@ struct Frame2D {
    * @param point point defined in the reference frame
    * @return Point2D transferred point to this print
    */
-  Point2D TransformForward(Point2D point) {
+  Point2D TransformForward(Point2D point) const {
     // calculate cosine and sine
-    double cos_theta = std::cos(origin.theta);
-    double sin_theta = std::sin(origin.theta);
+    const double cos_theta = std::cos(origin.theta);
+    const double sin_theta = std::sin(origin.theta);
     // multiply the linear difference by the frame rotation
     // P2 = R12 * (P1-t12)
-    double x = cos_theta * (point.x - origin.point.x) +
-               sin_theta * (point.y - origin.point.y);
-    double y = -sin_theta * (point.x - origin.point.x) +
-               cos_theta * (point.y - origin.point.y);
+    const double x = cos_theta * (point.x - origin.point.x) +
+                     sin_theta * (point.y - origin.point.y);
+    const double y = -sin_theta * (point.x - origin.point.x) +
+                     cos_theta * (point.y - origin.point.y);
     return Point2D(x, y);
   }
 
@@ -288,11 +294,11 @@ struct Frame2D {
    * @param pose pose defined in this frame
    * @return Pose2D transferred pose to the reference frame
    */
-  Pose2D TransformBack(Pose2D pose) {
+  Pose2D TransformBack(Pose2D pose) const {
     // transfer point back
-    Point2D point = TransformBack(pose.point);
+    const Point2D point = TransformBack(pose.point);
     // add rotation angles
-    double theta = pose.theta + origin.theta;
+    const double theta = pose.theta + origin.theta;
     return Pose2D(point, theta);
   }
 
@@ -302,11 +308,11 @@ struct Frame2D {
    * @param point pose defined in the reference frame
    * @return Point2D transferred pose to this print
    */
-  Pose2D TransformForward(Pose2D pose) {
+  Pose2D TransformForward(Pose2D pose) const {
     // transfer point forward
-    Point2D point = TransformForward(pose.point);
+    const Point2D point = TransformForward(pose.point);
     // calculate rotation difference
-    double theta = pose.theta - origin.theta;
+    const double theta = pose.theta - origin.theta;
     return Pose2D(point, theta);
   }
 
@@ -334,7 +340,7 @@ struct RangeFinderData {
    * @brief default constructor a new RangeFinderData object
    *
    */
-  RangeFinderData(){};
+  RangeFinderData() {}
 
   /**
    * @brief Construct a new RangeFinderData object
@@ -371,7 +377,7 @@ struct Size {
    * @brief default constructor a new Size object
    *
    */
-  Size(){};
+  Size() {}
 
   /**
    * @brief Construct a new Size object

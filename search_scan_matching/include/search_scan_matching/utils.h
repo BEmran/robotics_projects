@@ -81,19 +81,4 @@ comm::Point2D PolarToCaretssian(const double angle, const double radius);
 comm::CellInfo PointToCell(const comm::Point2D& point, const comm::Size& size,
                            const double resolution);
 
-/**
- * @brief convert range finder data to occupancy grid
- *
- * @param range_finder range finder pose
- * @param range_finder_data range finder data
- * @param range_max_range range finder maximum range
- * @param size a 2D Grid size
- * @param resolution a 2D Grid resolution
- * @return std::vector<std::vector<uint8_t>> occupancy grid
- */
-std::vector<std::vector<uint8_t>> RangeDataToOccupancyGrid(
-    const comm::Pose2D& range_finder_pose,
-    const comm::RangeData& range_finder_data, const double range_max_range,
-    const comm::Size& size, const double resolution);
-
 }  // namespace utils
