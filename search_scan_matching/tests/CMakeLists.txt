@@ -41,5 +41,5 @@ enable_testing()
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 # 'test1.cpp tests2.cpp' are source files with tests
-add_executable(Google_Tests_run1 utest.cpp)
+add_executable(Google_Tests_run1 utest.cpp utils_utest.cpp)
 target_link_libraries(Google_Tests_run1 gtest gtest_main pthread ${PROJECT_NAME})
