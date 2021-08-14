@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/Google_Tests_run1.dir/utest.cpp.o  -o Google_Tests_run1 -lgtest -lgtest_main -lpthread ../libsearch_scan_matching.a 

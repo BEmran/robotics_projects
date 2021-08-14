@@ -17,11 +17,11 @@
 #include "search_scan_matching/utils.h"
 
 int MatchingScore(std::vector<std::vector<uint8_t>> grid,
-                  std::vector<std::vector<uint8_t>> sensor) {
+                  std::vector<comm::Cell> sensor_in_grid) {
   int score = 0;
-  for (int i = 0; i < grid.size(); ++i) {
-    for (int j = 0; j < grid.size(); ++j) {
-      if (grid[i][j] == sensor[i][j]) score++;
+  for (const auto cell : sensor_in_grid) {
+    if (grid[cell.row][cell.col] == comm::OCCUPIED) {
+      score++;
     }
   }
   return score;
@@ -74,12 +74,12 @@ est::EstimationInfo Estimation2D::BruteSearch(const Grid2D& grid,
         // update y position
         double y = start.point.y + k * config.linear_resolution;
         comm::Pose2D estimate(x, y, t);
+
         // calculate range_finder occupancy
-        auto rf_occupancy = RangeDataToOccupancyGrid(grid, estimate, range_data,
-                                                     range_max_range);
+        auto rf_grid_cells =
+            RangeDataToGridCells(grid, estimate, range_data, range_max_range);
         // calculate score
-        auto score = MatchingScore(grid.GetOccupancy(), rf_occupancy);
-        // record estimation score
+        auto score = MatchingScore(grid.GetOccupancy(), rf_grid_cells);
         est_info_vec_.push_back(est::EstimationInfo(score, estimate));
       }
     }

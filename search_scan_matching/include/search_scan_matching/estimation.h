@@ -71,16 +71,15 @@ struct SearchConfig {
 };
 }  // namespace est
 
-//
 /**
- * @brief calculate a matching score between to two 2d Arrays
- *
+ * @brief calculate a matching score between grid occupancy and sensor data
+ * represented in grid cells
  * @param grid occupancy grid defined by the grid
- * @param laser occupancy grid seen by the sensor
+ * @param sensor_in_grid sensor data represented in grid cells
  * @return int matching score
  */
 int MatchingScore(std::vector<std::vector<uint8_t>> grid,
-                  std::vector<std::vector<uint8_t>> laser);
+                  std::vector<comm::Cell> sensor_in_grid);
 
 /**
  * @brief runs an score matching estimation algorithm to estimate the best pose

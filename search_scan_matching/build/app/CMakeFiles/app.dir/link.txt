@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/app.dir/agrid.cpp.o  -o app ../libsearch_scan_matching.a 

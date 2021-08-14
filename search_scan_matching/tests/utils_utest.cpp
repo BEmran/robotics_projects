@@ -1,23 +1,29 @@
+/**
+ * @file utils_utest.cpp
+ * @author Bara Emran (bara.erman@gmail.com)
+ * @brief unit tests for utils fintions
+ * @version 0.1
+ * @date 2021-08-14
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
+
 #include <math.h>
-#include <search_scan_matching/common.h>
-#include <search_scan_matching/utils.h>
 
 #include "gtest/gtest.h"
+#include "search_scan_matching/common.h"
+#include "search_scan_matching/utils.h"
+#include "search_scan_matching_test/helper.h"
 
 using namespace utils;
 using namespace comm;
-
-const double EPS = 0.001;
-
-/*****************************************************************************
- * TESTING CASES
- *****************************************************************************/
 
 /**
  * @brief tests results of L2Norm function
  *
  */
-TEST(L2Norm, Definition) {
+TEST(L2Norm, Construction) {
   // arrange
   const double x1 = 1.6, y1 = 2.0, t1 = 0.5;
   const double x2 = 2.7, y2 = -2.0, t2 = 1.1;
@@ -46,7 +52,7 @@ TEST(L2Norm, Definition) {
  * @brief tests creation of Creat2DArray function
  *
  */
-TEST(Creat2DArray, Definition) {
+TEST(Creat2DArray, Construction) {
   // arrange
   const size_t height = 5, width = 7;
   const uint8_t val = 1;
@@ -82,7 +88,7 @@ TEST(Creat2DArray, Definition) {
  * @brief tests result of GenerateRandPose function
  *
  */
-TEST(GenerateRandPose, Definition) {
+TEST(GenerateRandPose, Construction) {
   // arrange
   const double linear_stddev = 0.01;
   const double angular_stddev = 0.02;
@@ -96,9 +102,8 @@ TEST(GenerateRandPose, Definition) {
   const double lin_min = -4 * linear_stddev;
   const double ang_max = 4 * angular_stddev;
   const double ang_min = -4 * angular_stddev;
-  EXPECT_EQ(0, zero_pose.point.x);
-  EXPECT_EQ(0, zero_pose.point.y);
-  EXPECT_EQ(0, zero_pose.theta);
+
+  EXPECT_POSE2D(comm::Pose2D(0, 0, 0), zero_pose);
   EXPECT_TRUE(lin_min < zero_ang.point.x && zero_ang.point.x < lin_max);
   EXPECT_TRUE(lin_min < zero_ang.point.y && zero_ang.point.y < lin_max);
   EXPECT_EQ(0, zero_ang.theta);
@@ -114,38 +119,32 @@ TEST(GenerateRandPose, Definition) {
  * @brief tests transformaition result of PolarToCaretssian function
  *
  */
-TEST(PolarToCaretssian, Definition) {
+TEST(PolarToCaretssian, Construction) {
   // arrange
   const double angle = 1.2, radius = 7.1;
   const Point2D ans(radius * std::cos(angle), radius * std::sin(angle));
   // act
   const Point2D zero_ang = PolarToCaretssian(0, radius);
   const Point2D zero_rad = PolarToCaretssian(angle, 0);
-  const Point2D pose = PolarToCaretssian(angle, radius);
+  const Point2D point = PolarToCaretssian(angle, radius);
   const Point2D neg_ang = PolarToCaretssian(-angle, radius);
   const Point2D neg_rad = PolarToCaretssian(angle, -radius);
   const Point2D double_neg = PolarToCaretssian(-angle, -radius);
 
   // assert
-  EXPECT_NEAR(radius, zero_ang.x, EPS);
-  EXPECT_NEAR(0, zero_ang.y, EPS);
-  EXPECT_NEAR(0, zero_rad.x, EPS);
-  EXPECT_NEAR(0, zero_rad.y, EPS);
-  EXPECT_NEAR(ans.x, pose.x, EPS);
-  EXPECT_NEAR(ans.y, pose.y, EPS);
-  EXPECT_NEAR(ans.x, neg_ang.x, EPS);
-  EXPECT_NEAR(-ans.y, neg_ang.y, EPS);
-  EXPECT_NEAR(-ans.x, neg_rad.x, EPS);
-  EXPECT_NEAR(-ans.y, neg_rad.y, EPS);
-  EXPECT_NEAR(-ans.x, double_neg.x, EPS);
-  EXPECT_NEAR(ans.y, double_neg.y, EPS);
+  EXPECT_POINT2D(comm::Point2D(radius, 0), zero_ang);
+  EXPECT_POINT2D(comm::Point2D(0, 0), zero_rad);
+  EXPECT_POINT2D(ans, point);
+  EXPECT_POINT2D(comm::Point2D(ans.x, -ans.y), neg_ang);
+  EXPECT_POINT2D(comm::Point2D(-ans.x, -ans.y), neg_rad);
+  EXPECT_POINT2D(comm::Point2D(-ans.x, ans.y), double_neg);
 }
 
 /**
  * @brief tests transformaition result of PointToCell function
  *
  */
-TEST(PointToCell, Definition) {
+TEST(PointToCell, Construction) {
   // arrange
   const double x = 1, y = 2;
   const size_t h = 4, w = 8;
@@ -162,15 +161,11 @@ TEST(PointToCell, Definition) {
   const CellInfo not_valid5 = PointToCell(Point2D(0, 0), Size(0, 0), res);
   const CellInfo cell_ans = PointToCell(point, size, res);
   // assert
-  EXPECT_EQ(0, zero.cell.row);
-  EXPECT_EQ(0, zero.cell.col);
-  EXPECT_TRUE(zero.valid);
+  EXPECT_CELLINFO(CellInfo(true, Cell(0, 0)), zero);
   EXPECT_FALSE(not_valid1.valid);
   EXPECT_FALSE(not_valid2.valid);
   EXPECT_FALSE(not_valid3.valid);
   EXPECT_FALSE(not_valid4.valid);
   EXPECT_FALSE(not_valid5.valid);
-  EXPECT_EQ(cell.row, cell_ans.cell.row);
-  EXPECT_EQ(cell.col, cell_ans.cell.col);
-  EXPECT_TRUE(cell_ans.valid);
+  EXPECT_CELLINFO(CellInfo(true, cell), cell_ans);
 }

@@ -26,9 +26,10 @@ class RangeFinder {
   /**
    * @brief Construct a new Range Finder object
    *
-   * @param max_range maximum ray range
+   * @param max_range maximum ray range > 0
    * @param fov field of view
-   * @param res ray resolution
+   * @param res ray resolution >= 0
+   * @throws std::runtime_error if one of the conditions are not met
    */
   RangeFinder(const double max_range, const double fov, const double res);
 
@@ -48,7 +49,7 @@ class RangeFinder {
    *
    * @return RangeData last measured data
    */
-  comm::RangeData GetData();
+  comm::RangeData GetData() const;
 
  private:
   double max_range_;  // range finder maximum range
@@ -59,15 +60,39 @@ class RangeFinder {
 };
 
 /**
+ * @brief convert a single range finder data to occupancy grid index
+ *
+ * @param grid grid with actual obstacles are placed
+ * @param range_finder_pose range finder pose
+ * @param range_data range finder data
+ * @return comm::CellInfo cell info
+ */
+comm::CellInfo SingleRangeDataToGridCell(
+    const Grid2D& grid, const comm::Frame2D& sensor_frame,
+    const comm::RangeFinderData& range_finder_data);
+
+/**
+ * @brief convert range finder data to grid cells
+ *
+ * @param grid grid with actual obstacles are placed
+ * @param range_finder_pose range finder pose
+ * @param range_data range finder data
+ * @param range_finder_max_range range finder maximum range
+ * @return std::vector<comm::Cell> vector of cell indicies
+ */
+std::vector<comm::Cell> RangeDataToGridCells(
+    const Grid2D& grid, const comm::Pose2D& range_finder_pose,
+    const comm::RangeData& range_data, const double range_finder_max_range);
+
+/**
  * @brief convert range finder data to occupancy grid
  *
  * @param grid grid with actual obstacles are placed
  * @param range_finder_pose range finder pose
- * @param range_finder_data range finder data
+ * @param range_data range finder data
  * @param range_finder_max_range range finder maximum range
  * @return std::vector<std::vector<uint8_t>> occupancy grid
  */
 std::vector<std::vector<uint8_t>> RangeDataToOccupancyGrid(
     const Grid2D& grid, const comm::Pose2D& range_finder_pose,
-    const comm::RangeData& range_finder_data,
-    const double range_finder_max_range);
+    const comm::RangeData& range_data, const double range_finder_max_range);

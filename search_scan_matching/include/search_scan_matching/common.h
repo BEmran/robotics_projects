@@ -79,6 +79,17 @@ struct CellInfo {
    * @param c cell Object
    */
   CellInfo(const bool v, const Cell c) : valid(v), cell(c) {}
+
+  /**
+   * @brief a pretty way to printout cell info values
+   *
+   * @param os output stream
+   * @param c cell object to be printed
+   * @return std::ostream& output stream with cell information pass to it
+   */
+  friend std::ostream& operator<<(std::ostream& os, const CellInfo& c) {
+    return os << "valid [" << c.valid << "] " << c.cell;
+  }
 };
 
 /**
@@ -360,7 +371,7 @@ struct RangeFinderData {
    */
   friend std::ostream& operator<<(std::ostream& os,
                                   const RangeFinderData& data) {
-    return os << "[ang: " << data.angle << ", r: " << data.range << "]";
+    return os << "[ang: " << data.angle << ", range: " << data.range << "]";
   }
 };
 

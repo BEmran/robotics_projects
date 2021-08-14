@@ -54,6 +54,23 @@ class Grid2D {
                       const double width);
 
   /**
+   * @brief Transfers a point to grid frame and set its the occupancy if it is
+   * within the boundaries
+   * @param point_world a pose in the world frame
+   * @return true if the cell is within the boundaries
+   * @return false otherwise
+   */
+  bool SetCellOccupancy(const comm::Point2D& point_world, const uint8_t val);
+
+  /**
+   * @brief sets the occupancy of the passed cell if it is within the boundaries
+   * @param cell cell indicies
+   * @return true if the cell is within the boundaries
+   * @return false otherwise
+   */
+  bool SetCellOccupancy(const comm::Cell& cell, const uint8_t val);
+
+  /**
    * @brief indicates the status of a cell defined by projection of the
    * passed point on the grid
    *
@@ -62,6 +79,15 @@ class Grid2D {
    * @return false otherwise
    */
   bool IsOccupied(comm::Point2D point) const;
+
+  /**
+   * @brief indicates the status of a cell defined by cell indices
+   *
+   * @param cell the desired cell
+   * @return true Occupied, if cell value == comm::OCCUPIED
+   * @return false otherwise
+   */
+  bool IsOccupied(comm::Cell cell) const;
 
   /**
    * @brief Gets the Grid size
@@ -85,13 +111,6 @@ class Grid2D {
   std::vector<std::vector<uint8_t>> GetOccupancy() const;
 
   /**
-   * @brief Sets the Grid occupancy array
-   *
-   * @return std::vector<std::vector<uint8_t>> 2D array occupancy
-   */
-  void SetOccupancy(const std::vector<std::vector<uint8_t>>& occ);
-
-  /**
    * @brief Gets the Grid frame
    *
    * @return commFrame2D grid frame
@@ -99,6 +118,16 @@ class Grid2D {
   comm::Frame2D GetFrame() const;
 
  private:
+  /**
+   * @brief Asserts passed value and initialize grid parameters
+   *
+   * @param res grid resolution > 0
+   * @param length length of the grid in meter > 0
+   * @param width width of the grid in meter > 0
+   * @throws std::runtime_error atleast one of the conditions are not met
+   */
+  void Initialize(const double res, const double length, const double width);
+
   comm::Frame2D
       frame_;        // grid pose with respect to reference frame, i.e. World
   double res_;       // grid resolution m/cell
