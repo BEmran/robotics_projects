@@ -1,0 +1,17 @@
+# Goal
+
+std_msgs/Header header
+sensor_msgs/JointState target_state # current joint space target
+
+---
+
+# Result
+
+bool success # were we successful
+
+---
+
+# Feedback
+
+std_msgs/Header header
+sensor_msgs/JointState current_state # what is the current joint state

@@ -1,0 +1,21 @@
+# Goal
+
+std_msgs/Header header
+geometry_msgs/Vector3 target_point # The Cartesian coordinate to move the end effector to
+
+---
+
+# Result
+
+bool success # were we successful
+
+geometry_msgs/Vector3 error # how far is the end effector from the target, now that the action is "done"
+
+---
+
+# Feedback
+
+std_msgs/Header header
+
+geometry_msgs/Vector3 current_point # what is the position of the end effector currently
+geometry_msgs/Vector3 error # how far is the end effector currently from the target
