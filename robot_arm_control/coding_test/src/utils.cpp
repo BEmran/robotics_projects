@@ -23,31 +23,22 @@ Point JointToCartesian(std::array<double, 3> link_lengths,
 Point constrain_point_reach(std::array<double, 3> link_lengths, Point point) {
   // last joint angle with respect to x-axis
   const auto theta = std::atan2(point.x, point.z);
-  std::cout << " point: " << point.x << " " << point.z << std::endl;
-  std::cout << " theta: " << theta << std::endl;
   // find the distance between the goal point and origin
   const auto distance_to_goal =
       std::sqrt(std::pow(point.x, 2) + std::pow(point.z, 2));
   // find maximum distance robot can go to
   const auto max_distance_to_goal =
       std::accumulate(link_lengths.begin(), link_lengths.end(), 0.0);
-  std::cout << " max_distance_to_goal: " << max_distance_to_goal << std::endl;
   if (distance_to_goal <= max_distance_to_goal) {
     return point;
   }
   // clamp the actual distance and return the new distance
   const auto restricted_distance_to_goal =
       std::clamp(distance_to_goal, -max_distance_to_goal, max_distance_to_goal);
-  std::cout << "goal: " << distance_to_goal
-            << " new goal: " << restricted_distance_to_goal << std::endl;
   // calculate the new goal point
   Point restricted_point;
   restricted_point.x = restricted_distance_to_goal * std::sin(theta);
   restricted_point.z = restricted_distance_to_goal * std::cos(theta);
-
-  std::cout << " new point: " << restricted_point.x << " " << restricted_point.z
-            << std::endl;
-
   return restricted_point;
 }
 
@@ -81,17 +72,10 @@ std::array<double, 3> CartesianToJoint(std::array<double, 3> link_lengths,
   const auto den2 = 2 * r * link_lengths[0];
   const auto gama = clamp_acos(num2, den2);
 
-  std::cout << " alpha: " << alpha << std::endl;
-  std::cout << " theta: " << theta << std::endl;
-  std::cout << " beta: " << beta << std::endl;
-  std::cout << " gama: " << gama << std::endl;
-
   std::array<double, 3> joints;
   joints[0] = constrain_angle(alpha - gama);
   joints[1] = constrain_angle(M_PI - beta);
   joints[2] = constrain_angle(theta - joints[0] - joints[1]);
-  std::cout << " joints: " << joints[0] << " " << joints[1] << " " << joints[2]
-            << std::endl;
 
   return joints;
 }

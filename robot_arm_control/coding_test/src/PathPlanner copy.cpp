@@ -95,51 +95,62 @@ void PathPlanner::handle_accepted(
 
 void PathPlanner::move_point_send_goal(
     const std::shared_ptr<GoalHandleMoveToPoint> goal_handle) {
-  move_point_current_goal_handle_ = goal_handle;
   RCLCPP_INFO(this->get_logger(), "Executing goal");
-  const auto goal = move_point_current_goal_handle_->get_goal();
-  // current_point_target_[0] = goal->target_point.x;
-  // current_point_target_[1] = goal->target_point.y;
-  // current_point_target_[2] = goal->target_point.z;
-  utils::Point point_target;
-  point_target.x = goal->target_point.x;
-  point_target.y = goal->target_point.y;
-  point_target.z = goal->target_point.z;
-  const auto joints_target =
-      utils::CartesianToJoint({0.9, 0.9, 0.975}, point_target);
-  move_joints_send_goal(joints_target);
-
-  auto result = std::make_shared<MoveToPoint::Result>();
-  auto feedback = std::make_shared<MoveToPoint::Feedback>();
-  rclcpp::Rate loop_rate(10);
-  while (rclcpp::ok() && move_point_current_goal_handle_->is_active()) {
-    // Check if there is a cancel request
-    if (goal_handle->is_canceling()) {
-      result->success = false;
-      result->error.x = current_point_target_[0] - current_point_state_[0];
-      result->error.y = current_point_target_[1] - current_point_state_[1];
-      result->error.z = current_point_target_[2] - current_point_state_[2];
-      goal_handle->canceled(result);
-      RCLCPP_INFO(this->get_logger(), "Goal canceled");
-      return;
+  const auto goal = goal_handle->get_goal();
+  current_point_target_[0] = goal->target_point.x;
+  current_point_target_[1] = goal->target_point.y;
+  current_point_target_[2] = goal->target_point.z;
+  // utils::Point point_target;
+  // point_target.x = goal->target_point.x;
+  // point_target.y = goal->target_point.y;
+  // point_target.z = goal->target_point.z;
+  // const auto joints_target =
+  //     utils::CartesianToJoint({0.9, 0.9, 0.975}, point_target);
+  // move_joints_send_goal(joints_target);
+  rclcpp::Rate loop_rate(100);
+  while (rclcpp::ok() && goal_handle->is_active()) {
+    if (move_point_check_reached()) {
+      {
+        auto result = std::make_shared<MoveToPoint::Result>();
+        result->success = true;
+        result->error.x = current_point_target_[0] - current_point_state_[0];
+        result->error.y = current_point_target_[1] - current_point_state_[1];
+        result->error.z = current_point_target_[2] - current_point_state_[2];
+        RCLCPP_INFO(this->get_logger(), "Publish Result as SUCCEED");
+        goal_handle->succeed(result);
+      }
+      // move_point_send_results();
+      break;
     }
-    // if (move_point_check_reached()) {
-    //   break;
-    // }
-    // publish
-    move_point_send_feedback();
+    // move_point_send_feedback();
+    {
+      const auto goal_point = goal->target_point;
+      const auto current_point =
+          utils::JointToCartesian({0.9, 0.9, 0.975}, current_joint_);
+      // publish
+      auto feedback = std::make_shared<MoveToPoint::Feedback>();
+      feedback->header.stamp = now();
+      feedback->error.x = goal_point.x - current_point.x;
+      feedback->error.y = goal_point.y - current_point.y;
+      feedback->error.z = goal_point.z - current_point.z;
+      feedback->current_point.x = current_point.x;
+      feedback->current_point.y = current_point.y;
+      feedback->current_point.z = current_point.z;
+      goal_handle->publish_feedback(feedback);
+      RCLCPP_INFO(this->get_logger(), "Publish feedback");
+    }
+    tick();
     loop_rate.sleep();
   }
 }
 
-void PathPlanner::move_point_send_results(const bool success) {
+void PathPlanner::move_point_send_results() {
   auto result = std::make_shared<MoveToPoint::Result>();
-  result->success = success;
+  result->success = true;
   result->error.x = current_point_target_[0] - current_point_state_[0];
   result->error.y = current_point_target_[1] - current_point_state_[1];
   result->error.z = current_point_target_[2] - current_point_state_[2];
-  RCLCPP_INFO(this->get_logger(), "Publish Result as %s",
-              success ? "SUCCESS" : "FAILURE");
+  RCLCPP_INFO(this->get_logger(), "Publish Result as SUCCEED");
   move_point_current_goal_handle_->succeed(result);
 }
 
@@ -230,7 +241,6 @@ void PathPlanner::move_joints_send_goal(const std::array<double, 3> joints) {
               goal.target_state.position[0], goal.target_state.position[1],
               goal.target_state.position[2]);
 
-  // Setup the goal to use our callbacks
   auto options = ClientMoveJoints::SendGoalOptions();
   options.goal_response_callback =
       std::bind(&PathPlanner::move_joints_goal_response_callback, this, _1);
@@ -239,7 +249,7 @@ void PathPlanner::move_joints_send_goal(const std::array<double, 3> joints) {
   options.feedback_callback =
       std::bind(&PathPlanner::move_joints_feedback_callback, this, _1, _2);
   // Send the Goal
-  auto f = move_joints_action_client_->async_send_goal(goal, options);
+  move_joints_action_client_->async_send_goal(goal);
 }
 
 void PathPlanner::move_joints_goal_response_callback(
@@ -252,27 +262,12 @@ void PathPlanner::move_joints_goal_response_callback(
 
 void PathPlanner::move_joints_result_callback(
     const ClientMoveJoints::GoalHandle::WrappedResult& result) {
-  bool success = false;
-  switch (result.code) {
-    case rclcpp_action::ResultCode::SUCCEEDED:
-      RCLCPP_INFO(get_logger(),
-                  "Move Joints Goal Result (%s) [%s]: %s (%f, %f, %f)",
-                  rclcpp_action::to_string(result.goal_id).c_str(),
-                  action_code_to_string(result.code),
-                  result.result->success ? "SUCCESS" : "FAILURE");
-      success = result.result->success ? true : false;
-      break;
-    case rclcpp_action::ResultCode::ABORTED:
-      RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
-      return;
-    case rclcpp_action::ResultCode::CANCELED:
-      RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
-      return;
-    default:
-      RCLCPP_ERROR(this->get_logger(), "Unknown result code");
-      return;
-  }
-  move_point_send_results(success);
+  RCLCPP_INFO(get_logger(),
+              "Move Joints Goal Result (%s) [%s]: %s (%f, %f, %f)",
+              rclcpp_action::to_string(result.goal_id).c_str(),
+              action_code_to_string(result.code),
+              result.result->success ? "SUCCESS" : "FAILURE");
+  move_point_send_results();
 }
 
 void PathPlanner::move_joints_feedback_callback(
@@ -285,6 +280,7 @@ void PathPlanner::move_joints_feedback_callback(
               feedback->current_state.position[0],
               feedback->current_state.position[1],
               feedback->current_state.position[2]);
+  move_point_send_feedback();
 }
 
 void PathPlanner::js_callback(const JointState::SharedPtr msg) {

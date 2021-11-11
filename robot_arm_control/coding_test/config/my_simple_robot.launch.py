@@ -21,9 +21,9 @@ def generate_launch_description():
 
         Node(package='coding_test', executable='my_dummy_joint_controller', output='screen'),
 
-        # Node(package='coding_test', executable='high_level_controller', output='screen'),
+        Node(package='coding_test', executable='high_level_controller', output='screen'),
 
-        # Node(package='coding_test', executable='path_planner', output='screen'),
+        Node(package='coding_test', executable='path_planner', output='screen'),
 
         Node(package='rviz2', executable='rviz2',
              arguments=['-d', rviz_file])

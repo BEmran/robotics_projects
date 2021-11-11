@@ -1,0 +1,40 @@
+#
+# This is a simple Makefile for a main program.  This
+# Typing 'make' or 'make main' will create the executable file.
+#
+
+# define some Makefile variables for the compiler and compiler flags
+# to use Makefile variables later in the Makefile: $()
+#
+#  -g    adds debugging information to the executable file
+#  -Wall turns on most, but not all, compiler warnings
+#
+# for C++ define  CC = g++
+CC = g++
+CXXFLAGS = -std=c++17 -Wall
+LDFLAGS = 
+
+# typing 'make' will invoke the first target entry in the file 
+# (in this case the default target entry)
+# you can name this target entry anything, but "default" or "all"
+# are the most commonly used names by convention
+all: main
+
+# To create the executable file main we need the source file main.cpp:
+main: main.cpp
+	$(CC) $(CFLAGS) -o main main.cpp
+     
+# To start over from scratch, type 'make clean'.  This
+# removes the executable file, as well as old .o object
+# files and *~ backup files:
+
+#################### Cleaning rules for Unix-based OS ###################
+# Cleans complete project
+.PHONY: clean
+clean:
+	 $(RM) main *.o *~
+
+# Cleans only all files with the extension .d
+.PHONY: cleandep
+cleandep:
+	 $(RM) main *.d

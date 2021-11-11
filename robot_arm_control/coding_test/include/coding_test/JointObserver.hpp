@@ -57,7 +57,7 @@ class JointObserver : public rclcpp::Node {
   ~JointObserver() override = default;
 
  protected:
-   void publish_ef();
+  void publish_ef();
 
   void js_callback(const JointState::SharedPtr msg);
 

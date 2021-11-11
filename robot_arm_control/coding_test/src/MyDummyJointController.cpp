@@ -111,26 +111,17 @@ void MyDummyJointController::execute(
   auto result = std::make_shared<MoveJoints::Result>();
   rclcpp::Rate loop_rate(10);
   while (rclcpp::ok()) {
-    if (check()) {
-      for (size_t i = 0; i < num_joints; i++) {
-        joint_state_.velocity[i] = 0;
-      }
-      result->success = true;
-      goal_handle->succeed(result);
-      RCLCPP_INFO(this->get_logger(), "Publish Result as SUCCEED");
+    if (check_reached()) {
+      send_results(goal_handle);
       break;
     }
-    // publish
-    feedback_joint_state_->header.stamp = now();
-    for (size_t i = 0; i < num_joints; i++) {
-      feedback_joint_state_->current_state.position[i] =
-          joint_state_.position[i];
-    }
-
-    goal_handle->publish_feedback(feedback_joint_state_);
-    RCLCPP_INFO(this->get_logger(), "Publish feedback");
+    send_feedback(goal_handle);
     tick();
     loop_rate.sleep();
+  }
+  // stop movement
+  for (size_t i = 0; i < num_joints; i++) {
+    joint_state_.velocity[i] = 0;
   }
 }
 
@@ -163,7 +154,28 @@ void MyDummyJointController::tick() {
   }
 }
 
-bool MyDummyJointController::check() {
+void MyDummyJointController::send_results(
+    const std::shared_ptr<GoalHandleMoveJoints> goal_handle) {
+  auto result = std::make_shared<MoveJoints::Result>();
+  result->success = true;
+  RCLCPP_INFO(this->get_logger(), "Publish Result as %s",
+              result->success ? "SUCCESS" : "FAILURE");
+  goal_handle->succeed(result);
+}
+
+void MyDummyJointController::send_feedback(
+    const std::shared_ptr<GoalHandleMoveJoints> goal_handle) {
+  // publish
+  feedback_joint_state_->header.stamp = now();
+  for (size_t i = 0; i < num_joints; i++) {
+    feedback_joint_state_->current_state.position[i] = joint_state_.position[i];
+    feedback_joint_state_->current_state.velocity[i] = joint_state_.velocity[i];
+  }
+  goal_handle->publish_feedback(feedback_joint_state_);
+  RCLCPP_INFO(this->get_logger(), "Publish feedback!");
+}
+
+bool MyDummyJointController::check_reached() {
   double error = 0;
   for (size_t i = 0; i < num_joints; i++) {
     error += current_joint_target_[i] - joint_state_.position[i];

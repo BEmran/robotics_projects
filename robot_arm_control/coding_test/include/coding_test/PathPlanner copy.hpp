@@ -96,8 +96,7 @@ class PathPlanner : public rclcpp::Node {
       const std::shared_ptr<GoalHandleMoveToPoint> goal_handle);
 
   void move_point_send_feedback();
-
-  void move_point_send_results(const bool success);
+  void move_point_send_results();
 
   void move_joints_send_goal(const std::array<double, 3> joints);
 

@@ -59,19 +59,17 @@ void HighLevelController::send_goal() {
               goal.target_point.y, goal.target_point.z);
 
   // Setup the goal to use our callbacks
-  Client::SendGoalOptions options{};
-  options.goal_response_callback = [this](auto&&... args) {
-    goal_response_callback(args...);
-  };
-  options.result_callback = [this](auto&&... args) {
-    result_callback(args...);
-  };
-  options.feedback_callback = [this](auto&&... args) {
-    feedback_callback(args...);
-  };
 
-  // Send the Goal
-  move_to_point_client_->async_send_goal(goal);
+  using namespace std::placeholders;
+  auto send_goal_options =
+      rclcpp_action::Client<MoveToPoint>::SendGoalOptions();
+  send_goal_options.goal_response_callback =
+      std::bind(&HighLevelController::goal_response_callback, this, _1);
+  send_goal_options.feedback_callback =
+      std::bind(&HighLevelController::feedback_callback, this, _1, _2);
+  send_goal_options.result_callback =
+      std::bind(&HighLevelController::result_callback, this, _1);
+  move_to_point_client_->async_send_goal(goal, send_goal_options);
 }
 
 void HighLevelController::goal_response_callback(
@@ -95,9 +93,13 @@ void HighLevelController::result_callback(
 void HighLevelController::feedback_callback(
     Client::GoalHandle::SharedPtr handle,
     const std::shared_ptr<const MoveToPoint::Feedback> feedback) {
-  RCLCPP_INFO(get_logger(), "Goal Feedback (%s) [%s]: (%f, %f, %f)",
-              rclcpp_action::to_string(handle->get_goal_id()).c_str(),
-              action_code_to_string(handle->get_status()),
+  (void)handle;
+  // RCLCPP_INFO(get_logger(), "Goal Feedback (%s) [%s]: (%f, %f, %f)",
+  //             rclcpp_action::to_string(handle->get_goal_id()).c_str(),
+  //             action_code_to_string(handle->get_status()),
+  //             feedback->current_point.x, feedback->current_point.y,
+  //             feedback->current_point.z);
+  RCLCPP_INFO(get_logger(), "Received goal feedback: (%f, %f, %f)",
               feedback->current_point.x, feedback->current_point.y,
               feedback->current_point.z);
 }

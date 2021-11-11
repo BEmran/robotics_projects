@@ -73,7 +73,9 @@ class MyDummyJointController : public rclcpp::Node {
 
   void execute(const std::shared_ptr<GoalHandleMoveJoints> goal_handle);
 
-  bool check();
+  void send_results(const std::shared_ptr<GoalHandleMoveJoints> goal_handle);
+  void send_feedback(const std::shared_ptr<GoalHandleMoveJoints> goal_handle);
+  bool check_reached();
 
   /// Each tick of the controller.
   /// 1. Compute `joint_state_.position` and `joint_state_.velocity`, moving

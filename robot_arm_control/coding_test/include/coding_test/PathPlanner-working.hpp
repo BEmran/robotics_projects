@@ -29,11 +29,8 @@ class PathPlanner : public rclcpp::Node {
   using MoveJoints = coding_test_msgs::action::MoveJoints;
   using MoveToPoint = coding_test_msgs::action::MoveToPoint;
   using GoalHandleMoveToPoint = rclcpp_action::ServerGoalHandle<MoveToPoint>;
-  using ClientMoveJoints = rclcpp_action::Client<MoveJoints>;
 
-  constexpr static char joint_state_topic[] = "joint_states";
-  constexpr static char move_to_point_action_name[] = "move_to_point";
-  constexpr static char move_joints_action_name[] = "move_joints";
+  constexpr static char move_to_point_client_action_name[] = "move_to_point";
 
   /// The Joints that this controller is concerned with
   constexpr static std::array<std::string_view, 3> joint_names = {
@@ -44,7 +41,7 @@ class PathPlanner : public rclcpp::Node {
 
   //   /// Limit joint movement to this value (m/s).
   //   /// eg. To emulate servo motors
-  constexpr static auto velocity_limit = 0.1;
+  constexpr static auto velocity_limit = 1.0;
 
   //   /// How often to calculate position and velocity, and publish JointState
   //   constexpr static auto tick_period = std::chrono::milliseconds{10};
@@ -62,7 +59,7 @@ class PathPlanner : public rclcpp::Node {
 
   explicit PathPlanner(
       const rclcpp::NodeOptions &options = rclcpp::NodeOptions())
-      : PathPlanner("path_planner", "", options) {}
+      : PathPlanner("dummy_joint_controller", "", options) {}
 
   ~PathPlanner() override = default;
 
@@ -92,36 +89,12 @@ class PathPlanner : public rclcpp::Node {
   void handle_accepted(
       const std::shared_ptr<GoalHandleMoveToPoint> goal_handle);
 
-  void move_point_send_goal(
-      const std::shared_ptr<GoalHandleMoveToPoint> goal_handle);
-
-  void move_point_send_feedback();
-
-  void move_point_send_results(const bool success);
-
-  void move_joints_send_goal(const std::array<double, 3> joints);
-
-  /// Goal Response Callback for the action (just logs it)
-  void move_joints_goal_response_callback(
-      std::shared_future<ClientMoveJoints::GoalHandle::SharedPtr> future);
-  /// Goal Result Callback for the action (just logs it)
-  void move_joints_result_callback(
-      const ClientMoveJoints::GoalHandle::WrappedResult &);
-  /// Goal Feedback Callback (just logs it)
-  void move_joints_feedback_callback(
-      ClientMoveJoints::GoalHandle::SharedPtr handle,
-      std::shared_ptr<const MoveJoints::Feedback> feedback);
-
-  void js_callback(const JointState::SharedPtr msg);
+  void execute(const std::shared_ptr<GoalHandleMoveToPoint> goal_handle);
 
   void tick();
-  bool move_point_check_reached();
+  bool check();
 
-  ClientMoveJoints::SharedPtr move_joints_action_client_;
   rclcpp_action::Server<MoveToPoint>::SharedPtr move_to_point_action_server_;
-  std::shared_ptr<GoalHandleMoveToPoint> move_point_current_goal_handle_;
-
-  JointState move_joints_target_{};
 
   //   /// Current JointState Goal
   //   std::array<double, num_joints> current_joint_target_{};
@@ -135,11 +108,6 @@ class PathPlanner : public rclcpp::Node {
   /// Current JointState Goal
   std::array<double, num_joints> current_point_target_{};
 
-  /// Cache a constructed JointState (this will reduce allocations later)
-  JointState joint_state_{};
-  std::array<double, 3> current_joint_;
-
-  rclcpp::Subscription<JointState>::SharedPtr js_subscriber_;
   //   /// Cache a constructed JointState (this will reduce allocations later)
   //   JointState joint_state_{};
 };
